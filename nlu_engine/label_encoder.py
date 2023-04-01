@@ -9,8 +9,7 @@ class LabelEncoder:
         :param data_df: pandas dataframe
         :return: encoded labels
         """
-        label_encoded_y = encoder.fit_transform(target_class)
-        return label_encoded_y
+        return encoder.fit_transform(target_class)
 
     @staticmethod
     def decode(label_encoded_y):
@@ -19,5 +18,4 @@ class LabelEncoder:
         :param label_encoded_y: encoded labels list
         :return: decoded labels list
         """
-        label_decoded_y = encoder.inverse_transform(label_encoded_y)
-        return label_decoded_y
+        return encoder.inverse_transform(label_encoded_y)

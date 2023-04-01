@@ -32,13 +32,11 @@ class MacroDataRefinement:
         if overlapping_intents_in_domains_df.empty:
             print(
                 'There are no overlapping intents in the domains (that\'s a good thing)')
-            output_df = number_of_intents_per_domain_df
+            return number_of_intents_per_domain_df
         else:
             print(
                 f'Uh oh. There are {overlapping_intents_in_domains_df.shape[0]} intents with overlapping domains.\nThat\'s usually not good to have.\n\nThe easiest solution would be to rename them in respect to their domains.')
-            output_df = overlapping_intents_in_domains_df
-
-        return output_df
+            return overlapping_intents_in_domains_df
 
     @staticmethod
     def list_and_select_domain(nlu_data_df):
@@ -48,9 +46,7 @@ class MacroDataRefinement:
         :return: string
         """
         list_of_domains = nlu_data_df['scenario'].unique()
-        domain_selection = input(
-            f'Please select a domain from the list:\n{list_of_domains}')
-        return domain_selection
+        return input(f'Please select a domain from the list:\n{list_of_domains}')
 
     @staticmethod
     def create_review_df(to_review_df):
@@ -88,9 +84,7 @@ class MacroDataRefinement:
         """
         to_review_df = MacroDataRefinement.create_review_df(to_review_df)
 
-        to_review_sheet = ipysheet.from_dataframe(to_review_df)
-
-        return to_review_sheet
+        return ipysheet.from_dataframe(to_review_df)
 
     @staticmethod
     def convert_sheet_to_dataframe(sheet):
