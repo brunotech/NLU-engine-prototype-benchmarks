@@ -38,9 +38,10 @@ class MacroIntentRefinement:
 
         output = []
         for class_index, features in enumerate(coefs):
-            for feature_index, feature in enumerate(features):
-                output.append(
-                    (classes[class_index], feature_names[feature_index], feature))
+            output.extend(
+                (classes[class_index], feature_names[feature_index], feature)
+                for feature_index, feature in enumerate(features)
+            )
         feature_rank_df = pd.DataFrame(
             output, columns=['class', 'feature', 'coef'])
 
@@ -207,8 +208,7 @@ class MacroIntentRefinement:
         :return: string
         """
         intent_values = incorrect_intent_predictions_df['intent'].unique()
-        intent_to_refine = input(f"select intent to refine from the list:\n{intent_values}")
-        return intent_to_refine
+        return input(f"select intent to refine from the list:\n{intent_values}")
 
     @staticmethod
     def remove_intent(df, intent_to_remove):
@@ -224,8 +224,7 @@ class MacroIntentRefinement:
     def get_matched_domains_to_intents(df, intents):
         intents_list = intents.unique().tolist()
         domains_list = [domain for intent in intents for domain in df[df.intent == intent]['scenario'].unique()]
-        intent_domains = zip(intents_list, domains_list)
-        return intent_domains
+        return zip(intents_list, domains_list)
 
     @staticmethod
     def append_reviewed_intents_csvs(intents_domains, df):

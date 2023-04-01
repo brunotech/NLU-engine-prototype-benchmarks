@@ -16,7 +16,9 @@ class RenderJSON(object):
 
     def _ipython_display_(self):
         display_html(
-            '<div id="{}" style="height: 600px; width:100%;"></div>'.format(self.uuid), raw=True)
+            f'<div id="{self.uuid}" style="height: 600px; width:100%;"></div>',
+            raw=True,
+        )
         display_javascript("""
         require(["https://rawgit.com/caldwell/renderjson/master/renderjson.js"], function() {
         document.getElementById('%s').appendChild(renderjson(%s))

@@ -104,8 +104,7 @@ class DataUtils:
         Gets the domain dataframe.
         """
         prepared_data_df = DataUtils.prepare_dataframe_for_refinement(data_df)
-        domain_df = prepared_data_df[prepared_data_df['scenario'] == domain_selection]
-        return domain_df
+        return prepared_data_df[prepared_data_df['scenario'] == domain_selection]
 
 
 
@@ -128,8 +127,7 @@ class DataUtils:
         :param model_path: path to the pickle file
         :return: binary of model
         """
-        loaded_model = pickle.load(open(model_path, 'rb'))
-        return loaded_model
+        return pickle.load(open(model_path, 'rb'))
 
     @staticmethod
     def export_onnx_model(classifier, model_path):

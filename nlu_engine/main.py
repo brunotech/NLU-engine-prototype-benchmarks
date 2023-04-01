@@ -68,13 +68,12 @@ class NLUEngine:
             decoded_labels_to_predict=decoded_labels_to_predict
         )
 
-        report_df = Analytics.convert_report_to_df(
+        return Analytics.convert_report_to_df(
             classifier=classifier,
             report=report,
             label=labels_to_predict,
-            encoding='tfidf'
+            encoding='tfidf',
         )
-        return report_df
 
     @staticmethod
     def train_entity_classifier(data_df):
@@ -86,8 +85,7 @@ class NLUEngine:
 
         print('Training entity classifier')
         X, y = EntityExtractor.get_targets_and_labels(data_df)
-        crf_model = EntityExtractor.train_crf_model(X, y)
-        return crf_model
+        return EntityExtractor.train_crf_model(X, y)
 
     @staticmethod
     def create_entity_tagged_utterance(utterance, crf_model):
@@ -108,16 +106,18 @@ class NLUEngine:
             """
             change_counter = 0
             for index, token in enumerate(split_tagged_utterance):
-                if '[' in token:
-                    if len(split_tagged_utterance) > index + 3:
-                        if token == split_tagged_utterance[index + 3]:
-                            split_tagged_utterance[index + 2] = split_tagged_utterance[index + 2].replace(
-                                ']', '') + ' ' + split_tagged_utterance[index + 5]
+                if (
+                    '[' in token
+                    and len(split_tagged_utterance) > index + 3
+                    and token == split_tagged_utterance[index + 3]
+                ):
+                    split_tagged_utterance[index + 2] = split_tagged_utterance[index + 2].replace(
+                        ']', '') + ' ' + split_tagged_utterance[index + 5]
 
-                            split_tagged_utterance[index + 3] = 'to_remove'
-                            split_tagged_utterance[index + 4] = 'to_remove'
-                            split_tagged_utterance[index + 5] = 'to_remove'
-                            change_counter += 1
+                    split_tagged_utterance[index + 3] = 'to_remove'
+                    split_tagged_utterance[index + 4] = 'to_remove'
+                    split_tagged_utterance[index + 5] = 'to_remove'
+                    change_counter += 1
             return (split_tagged_utterance, change_counter)
 
         def remove_entities(split_tagged_utterance):

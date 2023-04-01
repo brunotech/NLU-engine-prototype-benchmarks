@@ -45,9 +45,7 @@ class EntityExtractor:
         :param extracted_entities: list of entities extracted from an utterance.
         :return: string of joined list of entity types.
         """
-        entity_types = []
-        for entity in extracted_entities:
-            entity_types.append(entity['type'])
+        entity_types = [entity['type'] for entity in extracted_entities]
         return ','.join(entity_types)
 
     @staticmethod
@@ -59,7 +57,7 @@ class EntityExtractor:
         """
         extracted_entities = EntityExtractor.extract_entities(utterance)
 
-        entities_joined = str('')
+        entities_joined = ''
         for idx, entity in enumerate(extracted_entities):
             entity_type = entity['type']
             if idx < len(extracted_entities) - 1:
@@ -85,8 +83,7 @@ class EntityExtractor:
 
     @staticmethod
     def tokenize_utterance(utterance):
-        tokenized_utterance = nltk.word_tokenize(utterance)
-        return tokenized_utterance
+        return nltk.word_tokenize(utterance)
 
     @staticmethod
     def pos_tag_utterance(utterance):
@@ -94,8 +91,7 @@ class EntityExtractor:
         POS tags a given utterance.
         """
         tokenized_utterance = EntityExtractor.tokenize_utterance(utterance)
-        utterance_pos = nltk.pos_tag(tokenized_utterance)
-        return utterance_pos
+        return nltk.pos_tag(tokenized_utterance)
 
 
     @staticmethod
@@ -107,9 +103,7 @@ class EntityExtractor:
         words = []
 
         for entity in entities:
-            for word in entity['words']:
-                words.append(word)
-
+            words.extend(iter(entity['words']))
         for pair in utterance_pos:
             word = pair[0]
             pos = pair[1]
@@ -156,22 +150,22 @@ class EntityExtractor:
         if i > 0:
             word1 = utterance[i-1][0]
             postag1 = utterance[i-1][1]
-            features.update({
+            features |= {
                 '-1:word': word1,
                 '-1:postag': postag1,
                 '-1:postag[:2]': postag1[:2],
-            })
+            }
         else:
             features['BOS'] = True
 
         if i < len(utterance)-1:
             word1 = utterance[i+1][0]
             postag1 = utterance[i+1][1]
-            features.update({
+            features |= {
                 '+1:word': word1,
                 '+1:postag': postag1,
                 '+1:postag[:2]': postag1[:2],
-            })
+            }
         else:
             features['EOS'] = True
 
@@ -207,32 +201,29 @@ class EntityExtractor:
         """
         Trains a CRF model.
         """
-        crf_model = crf.fit(X, y)
-        return crf_model
+        return crf.fit(X, y)
 
     @staticmethod
     def predict_crf_model(crf_model, X):
         """
         Predicts the CRF model.
         """
-        y_pred = crf_model.predict(X)
-        return y_pred
+        return crf_model.predict(X)
 
     @staticmethod
     def get_entities(utterance, crf_model):
         utterance_pos = EntityExtractor.pos_tag_utterance(utterance)
         utterance_features = EntityExtractor.utterance2features(utterance_pos)
-        label = crf_model.predict_single(utterance_features)
-        return label
+        return crf_model.predict_single(utterance_features)
 
     @staticmethod
     def get_entity_types_and_locations(utterance, crf_model):
-        entity_locations_and_types = []
         entities = EntityExtractor.get_entities(utterance, crf_model)
-        for location, entity in enumerate(entities):
-            if entity !="0":
-                entity_locations_and_types.append((location, entity))
-        return entity_locations_and_types
+        return [
+            (location, entity)
+            for location, entity in enumerate(entities)
+            if entity != "0"
+        ]
 
     @staticmethod
     def get_entity_tags(utterance, crf_model):
@@ -267,12 +258,15 @@ class EntityExtractor:
         tagged_entities = EntityExtractor.get_entity_tags(utterance, crf_model)
         tagged_utterance = utterance
         for entity_type, entity in tagged_entities:
-            if entity + ' ' in utterance:
-                tagged_utterance = tagged_utterance.replace(entity + ' ', "[{} : {}] ".format(entity_type, entity))
-            elif ' ' + entity in utterance:
+            if f'{entity} ' in utterance:
                 tagged_utterance = tagged_utterance.replace(
-                    ' ' + entity, " [{} : {}]".format(entity_type, entity))
-                
+                    f'{entity} ', f"[{entity_type} : {entity}] "
+                )
+            elif f' {entity}' in utterance:
+                tagged_utterance = tagged_utterance.replace(
+                    f' {entity}', f" [{entity_type} : {entity}]"
+                )
+
         return tagged_utterance
 
     @staticmethod
